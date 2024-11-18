@@ -84,6 +84,7 @@ static double limitFPS = 1.0 / 60.0;
 DirectionalLight mainLight;
 //para declarar varias luces de tipo pointlight
 PointLight pointLights[MAX_POINT_LIGHTS];
+PointLight pointLights2[MAX_POINT_LIGHTS];
 SpotLight spotLights[MAX_SPOT_LIGHTS];
 SpotLight spotLights2[MAX_SPOT_LIGHTS];
 
@@ -315,8 +316,10 @@ int main()
 
 	//contador de luces puntuales
 	unsigned int pointLightCount = 0;
+	unsigned int pointLightCount2 = 0;
 	//contador de luces spot
 	unsigned int spotLightCount = 0;
+	unsigned int spotLightCount2 = 0;
 
 	//Luces de las luminarias
 	spotLights[0] = SpotLight(0.0f, 1.0f, 1.0f, //luz cian
@@ -327,13 +330,13 @@ int main()
 		40.0f); // angulo de apertura
 	spotLightCount++;
 
-	spotLights[1] = SpotLight(0.0f, 1.0f, 1.0f, //luz cian
+	spotLights2[0] = SpotLight(0.0f, 1.0f, 1.0f, //luz cian
 		1.0f, 2.0f,
 		-45.0f, 10.0f, -45.0f, // posicion
 		0.0f, -5.0f, 0.0f,
 		1.0f, 0.0f, 0.0f,
 		40.0f); // angulo de apertura
-	spotLightCount++;
+	spotLightCount2++;
 
 	pointLights[0] = PointLight(1.0f, 1.0f, 0.0f, // luz amarilla
 		7.0f, 1.0f,
@@ -341,11 +344,11 @@ int main()
 		1.0f, 0.09f, 0.032f);
 	pointLightCount++;
 
-	pointLights[1] = PointLight(1.0f, 1.0f, 0.0f, // luz amarilla
+	pointLights2[0] = PointLight(1.0f, 1.0f, 0.0f, // luz amarilla
 		7.0f, 1.0f,
 		-45.0f, 20.0f, 45.0f, // posicion
 		1.0f, 0.09f, 0.032f);
-	pointLightCount++;
+	pointLightCount2++;
 
 
 	GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0, uniformEyePosition = 0,
@@ -556,20 +559,48 @@ int main()
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
 		glUniform3f(uniformEyePosition, camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
 
-		//información al shader de fuentes de iluminación
-		shaderList[0].SetDirectionalLight(&mainLight);
-		//shaderList[0].SetPointLights(pointLights, pointLightCount);
-		if (!cicloDia)
+		/*luces*/
 		{
-			shaderList[0].SetSpotLights(spotLights, spotLightCount);
-			shaderList[0].SetPointLights(pointLights, pointLightCount);
+			//información al shader de fuentes de iluminación
+			shaderList[0].SetDirectionalLight(&mainLight);
+			//shaderList[0].SetPointLights(pointLights, pointLightCount);
+			if (!cicloDia)
+			{
+				if (personaje[personajeActual].posicion[0] > 35 && personaje[personajeActual].posicion[2] > 35)
+				{
+					shaderList[0].SetSpotLights(spotLights, spotLightCount);
+					shaderList[0].SetPointLights(pointLights, 0);
+				}
+				else if (personaje[personajeActual].posicion[0] > 35 && personaje[personajeActual].posicion[2] < -35)
+				{
+					shaderList[0].SetSpotLights(spotLights, 0);
+					shaderList[0].SetPointLights(pointLights, pointLightCount);
+				}
+				else if (personaje[personajeActual].posicion[0] < -35 && personaje[personajeActual].posicion[2] < -35)
+				{
+					shaderList[0].SetSpotLights(spotLights2, spotLightCount2);
+					shaderList[0].SetPointLights(pointLights, 0);
+				}
+				else if (personaje[personajeActual].posicion[0] < -35 && personaje[personajeActual].posicion[2] > 35)
+				{
+					shaderList[0].SetSpotLights(spotLights, 0);
+					shaderList[0].SetPointLights(pointLights2, pointLightCount2);
+				}
+				else
+				{
+					shaderList[0].SetSpotLights(spotLights, 0);
+					shaderList[0].SetPointLights(pointLights, 0);
+				}
+			}
+			else
+			{
+				shaderList[0].SetSpotLights(spotLights, 0);
+				shaderList[0].SetPointLights(pointLights, 0);
+			}
 		}
-		else
-		{
-			shaderList[0].SetSpotLights(spotLights, 0);
-			shaderList[0].SetPointLights(pointLights, 0);
-		}
+		
 			
+		//printf("Personaje %i Pos: %.1f, %.1f, %.1f\n",personajeActual, personaje[personajeActual].posicion[0], personaje[personajeActual].posicion[1], personaje[personajeActual].posicion[2]);
 
 		Material_opaco.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
