@@ -5,13 +5,13 @@ C:\Users\Vandal\Desktop\CGeIHC\Proyecto\Window.h(12,36): warning C4244: 'return'
 C:\Users\Vandal\Desktop\CGeIHC\Proyecto\Window.h(13,37): warning C4244: 'return': conversión de 'GLint' a 'GLfloat'; posible pérdida de datos
   (compilando archivo de origen "proyecto.cpp")
   
-C:\Users\Vandal\Desktop\CGeIHC\Proyecto\proyecto.cpp(166,12): warning C4244: 'argumento': conversión de 'time_t' a 'unsigned int'; posible pérdida de datos
-C:\Users\Vandal\Desktop\CGeIHC\Proyecto\proyecto.cpp(172,12): warning C4244: 'argumento': conversión de 'time_t' a 'unsigned int'; posible pérdida de datos
-C:\Users\Vandal\Desktop\CGeIHC\Proyecto\proyecto.cpp(235,28): warning C4305: 'inicializando': truncamiento de 'double' a 'GLfloat'
-C:\Users\Vandal\Desktop\CGeIHC\Proyecto\proyecto.cpp(350,18): warning C4305: '=': truncamiento de 'double' a 'float'
-C:\Users\Vandal\Desktop\CGeIHC\Proyecto\proyecto.cpp(476,21): warning C4244: 'inicializando': conversión de 'double' a 'float'; posible pérdida de datos
-C:\Users\Vandal\Desktop\CGeIHC\Proyecto\proyecto.cpp(484,15): warning C4244: 'inicializando': conversión de 'double' a 'GLfloat'; posible pérdida de datos
-C:\Users\Vandal\Desktop\CGeIHC\Proyecto\proyecto.cpp(486,33): warning C4244: '+=': conversión de 'double' a 'GLfloat'; posible pérdida de datos
-C:\Users\Vandal\Desktop\CGeIHC\Proyecto\proyecto.cpp(853,18): warning C4305: '=': truncamiento de 'double' a 'float'
-C:\Users\Vandal\Desktop\CGeIHC\Proyecto\proyecto.cpp(971,39): warning C4244: '=': conversión de 'double' a 'float'; posible pérdida de datos
+C:\Users\Vandal\Desktop\CGeIHC\Proyecto\proyecto.cpp(168,12): warning C4244: 'argumento': conversión de 'time_t' a 'unsigned int'; posible pérdida de datos
+C:\Users\Vandal\Desktop\CGeIHC\Proyecto\proyecto.cpp(174,12): warning C4244: 'argumento': conversión de 'time_t' a 'unsigned int'; posible pérdida de datos
+C:\Users\Vandal\Desktop\CGeIHC\Proyecto\proyecto.cpp(237,28): warning C4305: 'inicializando': truncamiento de 'double' a 'GLfloat'
+C:\Users\Vandal\Desktop\CGeIHC\Proyecto\proyecto.cpp(387,18): warning C4305: '=': truncamiento de 'double' a 'float'
+C:\Users\Vandal\Desktop\CGeIHC\Proyecto\proyecto.cpp(515,21): warning C4244: 'inicializando': conversión de 'double' a 'float'; posible pérdida de datos
+C:\Users\Vandal\Desktop\CGeIHC\Proyecto\proyecto.cpp(523,15): warning C4244: 'inicializando': conversión de 'double' a 'GLfloat'; posible pérdida de datos
+C:\Users\Vandal\Desktop\CGeIHC\Proyecto\proyecto.cpp(525,33): warning C4244: '+=': conversión de 'double' a 'GLfloat'; posible pérdida de datos
+C:\Users\Vandal\Desktop\CGeIHC\Proyecto\proyecto.cpp(901,18): warning C4305: '=': truncamiento de 'double' a 'float'
+C:\Users\Vandal\Desktop\CGeIHC\Proyecto\proyecto.cpp(1019,39): warning C4244: '=': conversión de 'double' a 'float'; posible pérdida de datos
   Proyecto.vcxproj -> C:\Users\Vandal\Desktop\CGeIHC\Debug\Proyecto.exe

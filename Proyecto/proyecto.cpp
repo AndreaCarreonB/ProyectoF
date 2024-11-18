@@ -47,6 +47,7 @@ Texture centroTexture;
 Skybox skybox;
 
 Model luminaria;
+Model farola;
 
 //MODELOS ANIMADOS EXTRAS MARIO
 Model pista;
@@ -84,6 +85,7 @@ DirectionalLight mainLight;
 //para declarar varias luces de tipo pointlight
 PointLight pointLights[MAX_POINT_LIGHTS];
 SpotLight spotLights[MAX_SPOT_LIGHTS];
+SpotLight spotLights2[MAX_SPOT_LIGHTS];
 
 // Vertex Shader
 static const char* vShader = "shaders/shader_light.vert";
@@ -310,7 +312,42 @@ int main()
 	mainLight = DirectionalLight(1.0f, 1.0f, 1.0f,
 		0.7f, 1.0f,
 		0.0f, 0.0f, -1.0f);
-	
+
+	//contador de luces puntuales
+	unsigned int pointLightCount = 0;
+	//contador de luces spot
+	unsigned int spotLightCount = 0;
+
+	//Luces de las luminarias
+	spotLights[0] = SpotLight(0.0f, 1.0f, 1.0f, //luz cian
+		1.0f, 2.0f,
+		45.0f, 10.0f, 45.0f, // posicion
+		0.0f, -5.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+		40.0f); // angulo de apertura
+	spotLightCount++;
+
+	spotLights[1] = SpotLight(0.0f, 1.0f, 1.0f, //luz cian
+		1.0f, 2.0f,
+		-45.0f, 10.0f, -45.0f, // posicion
+		0.0f, -5.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+		40.0f); // angulo de apertura
+	spotLightCount++;
+
+	pointLights[0] = PointLight(1.0f, 1.0f, 0.0f, // luz amarilla
+		7.0f, 1.0f,
+		45.0f, 20.0f, -45.0f, // posicion
+		1.0f, 0.09f, 0.032f);
+	pointLightCount++;
+
+	pointLights[1] = PointLight(1.0f, 1.0f, 0.0f, // luz amarilla
+		7.0f, 1.0f,
+		-45.0f, 20.0f, 45.0f, // posicion
+		1.0f, 0.09f, 0.032f);
+	pointLightCount++;
+
+
 	GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0, uniformEyePosition = 0,
 		uniformSpecularIntensity = 0, uniformShininess = 0;
 	GLuint uniformColor = 0;
@@ -442,6 +479,8 @@ int main()
 	//modelos extra
 	luminaria = Model();
 	luminaria.LoadModel("Models/street_light.obj");
+	farola = Model();
+	farola.LoadModel("Models/farola.obj");
 
 	/*pista = Model();
 	pista.LoadModel("Models/Circuit.obj");
@@ -519,6 +558,18 @@ int main()
 
 		//información al shader de fuentes de iluminación
 		shaderList[0].SetDirectionalLight(&mainLight);
+		//shaderList[0].SetPointLights(pointLights, pointLightCount);
+		if (!cicloDia)
+		{
+			shaderList[0].SetSpotLights(spotLights, spotLightCount);
+			shaderList[0].SetPointLights(pointLights, pointLightCount);
+		}
+		else
+		{
+			shaderList[0].SetSpotLights(spotLights, 0);
+			shaderList[0].SetPointLights(pointLights, 0);
+		}
+			
 
 		Material_opaco.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -668,33 +719,30 @@ int main()
 			model = glm::mat4(1.0);
 			model = glm::translate(model, glm::vec3(52.0f, 0.0f, 52.0f));
 			model = glm::rotate(model, 135 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-			model = glm::scale(model, glm::vec3(0.06f, 0.06f, 0.06f));
+			model = glm::scale(model, glm::vec3(0.08f, 0.08f, 0.08f));
 			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 			luminaria.RenderModel();
 
-			//Luces de las esquinas
 			model = glm::mat4(1.0);
 			model = glm::translate(model, glm::vec3(-52.0f, 0.0f, -52.0f));
 			model = glm::rotate(model, 315 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-			model = glm::scale(model, glm::vec3(0.06f, 0.06f, 0.06f));
+			model = glm::scale(model, glm::vec3(0.08f, 0.08f, 0.08f));
 			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 			luminaria.RenderModel();
 
-			//Luces de las esquinas
 			model = glm::mat4(1.0);
 			model = glm::translate(model, glm::vec3(52.0f, 0.0f, -52.0f));
 			model = glm::rotate(model, 225 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-			model = glm::scale(model, glm::vec3(0.06f, 0.06f, 0.06f));
+			model = glm::scale(model, glm::vec3(1.5f, 1.5f, 1.5f));
 			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-			luminaria.RenderModel();
+			farola.RenderModel();
 
-			//Luces de las esquinas
 			model = glm::mat4(1.0);
 			model = glm::translate(model, glm::vec3(-52.0f, 0.0f, 52.0f));
 			model = glm::rotate(model, 45 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-			model = glm::scale(model, glm::vec3(0.06f, 0.06f, 0.06f));
+			model = glm::scale(model, glm::vec3(1.5f, 1.5f, 1.5f));
 			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-			luminaria.RenderModel();
+			farola.RenderModel();
 		}
 
 		/*piso*/{
