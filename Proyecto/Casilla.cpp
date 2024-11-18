@@ -109,7 +109,7 @@ void Casilla::iniModelos(int i) {
 		strncat_s(archivoRuta, &archivoRutaDigito[1], 1);
 		strcat_s(archivoRuta, ".obj");//extension png
 		modelo = Model();
-		modelo.LoadModel(archivoRuta);
+		//modelo.LoadModel(archivoRuta);
 		modeloSube = false;//bandera de si sube o no
 	}
 

@@ -46,6 +46,8 @@ Texture centroTexture;
 
 Skybox skybox;
 
+Model luminaria;
+
 //MODELOS ANIMADOS EXTRAS MARIO
 Model pista;
 Model banzai;
@@ -438,7 +440,10 @@ int main()
 	float angulovaria = 0.0f;
 
 	//modelos extra
-	pista = Model();
+	luminaria = Model();
+	luminaria.LoadModel("Models/street_light.obj");
+
+	/*pista = Model();
 	pista.LoadModel("Models/Circuit.obj");
 	banzai = Model();
 	banzai.LoadModel("Models/banzai.obj");
@@ -460,7 +465,7 @@ int main()
 	ExtraSimiAlucin_Cuerpo = Model();
 	ExtraSimiAlucin_Cuerpo.LoadModel("Models/simi_alucin_cuerpo.obj");
 	ExtraSimiAlucin_Cabeza = Model();
-	ExtraSimiAlucin_Cabeza.LoadModel("Models/simi_alucin_cabeza.obj");
+	ExtraSimiAlucin_Cabeza.LoadModel("Models/simi_alucin_cabeza.obj");*/
 
 
 	bool asignar = false;
@@ -657,6 +662,39 @@ int main()
 			model = glm::rotate(model, -movSimiAlucin * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 			ExtraSimiAlucin_Cabeza.RenderModel();
+
+
+			//Luces de las esquinas
+			model = glm::mat4(1.0);
+			model = glm::translate(model, glm::vec3(52.0f, 0.0f, 52.0f));
+			model = glm::rotate(model, 135 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+			model = glm::scale(model, glm::vec3(0.06f, 0.06f, 0.06f));
+			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+			luminaria.RenderModel();
+
+			//Luces de las esquinas
+			model = glm::mat4(1.0);
+			model = glm::translate(model, glm::vec3(-52.0f, 0.0f, -52.0f));
+			model = glm::rotate(model, 315 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+			model = glm::scale(model, glm::vec3(0.06f, 0.06f, 0.06f));
+			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+			luminaria.RenderModel();
+
+			//Luces de las esquinas
+			model = glm::mat4(1.0);
+			model = glm::translate(model, glm::vec3(52.0f, 0.0f, -52.0f));
+			model = glm::rotate(model, 225 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+			model = glm::scale(model, glm::vec3(0.06f, 0.06f, 0.06f));
+			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+			luminaria.RenderModel();
+
+			//Luces de las esquinas
+			model = glm::mat4(1.0);
+			model = glm::translate(model, glm::vec3(-52.0f, 0.0f, 52.0f));
+			model = glm::rotate(model, 45 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+			model = glm::scale(model, glm::vec3(0.06f, 0.06f, 0.06f));
+			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+			luminaria.RenderModel();
 		}
 
 		/*piso*/{
