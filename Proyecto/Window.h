@@ -32,11 +32,11 @@ public:
 	GLfloat getPosCamaraZ() {
 		switch (static_cast<int>(angulo)) {
 		case 0:
-			return PosicionZ - 12.0f;
+			return PosicionZ - 6.0f;
 		case 90:
 			return PosicionZ;
 		case 180:
-			return PosicionZ + 12.0f;
+			return PosicionZ + 6.0f;
 		default:
 			return PosicionZ;
 		}
@@ -46,13 +46,15 @@ public:
 		case 0:
 			return PosicionX;
 		case 90:
-			return PosicionX - 12.0f;
+			return PosicionX - 6.0f;
 		case 180:
 			return PosicionX;
 		default:
-			return PosicionX + 12.0f;
+			return PosicionX + 6.0f;
 		}
 	}
+
+
 
 	GLfloat getangulo() { return angulo; }
 	GLint getCamaraVista() { return CamaraVista; }

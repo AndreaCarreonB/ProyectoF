@@ -39,15 +39,17 @@ Window mainWindow;
 std::vector<Mesh*> meshList;
 std::vector<Shader> shaderList;
 
-Camera camera, cameraAerea, cameraPersonaje;
+Camera camera, cameraAerea, cameraPersonaje, camaraIsometrica;
+float offset = 15.0f;
+float desplazamiento = 0.1f;
+float velocidad = 0.001f;
+float rango = 0.1f;
+bool direccionDerecha = true;
 
 Texture pisoTexture;
 Texture centroTexture;
 
 Skybox skybox;
-
-Model luminaria;
-Model farola;
 
 //MODELOS ANIMADOS EXTRAS MARIO
 Model pista;
@@ -84,9 +86,16 @@ static double limitFPS = 1.0 / 60.0;
 DirectionalLight mainLight;
 //para declarar varias luces de tipo pointlight
 PointLight pointLights[MAX_POINT_LIGHTS];
-PointLight pointLights2[MAX_POINT_LIGHTS];
 SpotLight spotLights[MAX_SPOT_LIGHTS];
-SpotLight spotLights2[MAX_SPOT_LIGHTS];
+
+// Crear la cámara isométrica
+glm::vec3 posicionCamara(-100.0f, 100.0f, 125.0f); // Posición de la cámara
+glm::vec3 vectorArriba(0.0f, 1.0f, 0.0f);          // Vector "arriba" (normalmente el eje Y)
+GLfloat yaw = -45.0f;        // Ángulo de rotación sobre el eje Y
+GLfloat pitch = -35.0f;    // Ángulo de rotación sobre el eje X
+GLfloat moveSpeed = 0.0f;  // Velocidad de movimiento (no necesaria si no estás moviendo la cámara)
+GLfloat turnSpeed = 0.0f;  // Velocidad de rotación (no necesaria si no estás rotando la cámara)
+
 
 // Vertex Shader
 static const char* vShader = "shaders/shader_light.vert";
@@ -262,6 +271,9 @@ void crearDado_8()
 	meshList.push_back(dado);
 }
 
+ 
+
+
 int main()
 {
 	mainWindow = Window(1366, 768); // 1280, 1024 or 1024, 768
@@ -270,9 +282,10 @@ int main()
 	CreateObjects();
 	CreateShaders();
 
-	//camera = Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -60.0f, 0.0f, 0.3f, 0.5f);
+	
 	Camera camera(glm::vec3(0.0f, 10.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.0f, 45.0f, 5.0f, 0.1f);
-	cameraAerea = Camera(glm::vec3(0.0f, 185.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.0f, -90.0f, 0.6f, 0.5f);
+	cameraAerea = Camera(glm::vec3(0.0f, 250.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.0f, -90.0f, 0.6f, 0.5f);
+	
 	//base
 	{
 	pisoTexture = Texture("Textures/piso.tga");
@@ -313,44 +326,7 @@ int main()
 	mainLight = DirectionalLight(1.0f, 1.0f, 1.0f,
 		0.7f, 1.0f,
 		0.0f, 0.0f, -1.0f);
-
-	//contador de luces puntuales
-	unsigned int pointLightCount = 0;
-	unsigned int pointLightCount2 = 0;
-	//contador de luces spot
-	unsigned int spotLightCount = 0;
-	unsigned int spotLightCount2 = 0;
-
-	//Luces de las luminarias
-	spotLights[0] = SpotLight(0.0f, 1.0f, 1.0f, //luz cian
-		1.0f, 2.0f,
-		45.0f, 10.0f, 45.0f, // posicion
-		0.0f, -5.0f, 0.0f,
-		1.0f, 0.0f, 0.0f,
-		40.0f); // angulo de apertura
-	spotLightCount++;
-
-	spotLights2[0] = SpotLight(0.0f, 1.0f, 1.0f, //luz cian
-		1.0f, 2.0f,
-		-45.0f, 10.0f, -45.0f, // posicion
-		0.0f, -5.0f, 0.0f,
-		1.0f, 0.0f, 0.0f,
-		40.0f); // angulo de apertura
-	spotLightCount2++;
-
-	pointLights[0] = PointLight(1.0f, 1.0f, 0.0f, // luz amarilla
-		7.0f, 1.0f,
-		45.0f, 20.0f, -45.0f, // posicion
-		1.0f, 0.09f, 0.032f);
-	pointLightCount++;
-
-	pointLights2[0] = PointLight(1.0f, 1.0f, 0.0f, // luz amarilla
-		7.0f, 1.0f,
-		-45.0f, 20.0f, 45.0f, // posicion
-		1.0f, 0.09f, 0.032f);
-	pointLightCount2++;
-
-
+	
 	GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0, uniformEyePosition = 0,
 		uniformSpecularIntensity = 0, uniformShininess = 0;
 	GLuint uniformColor = 0;
@@ -441,6 +417,8 @@ int main()
 		for (int a = 0; a < 5; a++) personaje[i].angulos[a] = 0.0f;
 	}
 
+
+
 	//animaciones
 	float modeloSubeVelocidad = 0.8f;
 	float modeloGiraVelocidad = 4.0f;
@@ -473,19 +451,14 @@ int main()
 	estadoSimiAlucin = true;
 
 	//variables para animación de mario
-	float movCoinOffset = 1.0f;
+	float movCoinOffset = 2.0f;
 	float giraCoin = 0.0f;
-	float movBanzai = 0.0f;
-	float movBanzaiOf = 0.1f;
+	float movBanzai = 80.0f;
+	float movBanzaiOf = 0.03f;
 	float angulovaria = 0.0f;
 
 	//modelos extra
-	luminaria = Model();
-	luminaria.LoadModel("Models/street_light.obj");
-	farola = Model();
-	farola.LoadModel("Models/farola.obj");
-
-	/*pista = Model();
+	pista = Model();
 	pista.LoadModel("Models/Circuit.obj");
 	banzai = Model();
 	banzai.LoadModel("Models/banzai.obj");
@@ -507,7 +480,7 @@ int main()
 	ExtraSimiAlucin_Cuerpo = Model();
 	ExtraSimiAlucin_Cuerpo.LoadModel("Models/simi_alucin_cuerpo.obj");
 	ExtraSimiAlucin_Cabeza = Model();
-	ExtraSimiAlucin_Cabeza.LoadModel("Models/simi_alucin_cabeza.obj");*/
+	ExtraSimiAlucin_Cabeza.LoadModel("Models/simi_alucin_cabeza.obj");
 
 
 	bool asignar = false;
@@ -527,8 +500,28 @@ int main()
 		deltaTime = now - lastTime;
 		deltaTime += (now - lastTime) / limitFPS;
 		lastTime = now;
+			
+		//CAMARAS
+		//Isometrica
+		Camera camaraIsometrica(posicionCamara, vectorArriba, yaw, pitch, moveSpeed, turnSpeed);
+		
+		//Cámara 3ra persona
+		cameraPersonaje = Camera(
+			glm::vec3(
+				personaje[personajeActual].posicion[0] - offset,  
+				personaje[personajeActual].posicion[1] + 7.0f,  
+				personaje[personajeActual].posicion[2]  
+			),
+			glm::vec3(0.0f, 1.0f, 0.0f),  
+			0.0f,  
+			0.0f, 
+			0.0f, 
+			0.0f   
+		);
 
-		cameraPersonaje = Camera(glm::vec3(mainWindow.getPosCamaraX(), 18.0f, mainWindow.getPosCamaraZ() - 6.0f), glm::vec3(0.0f, 1.0f, 0.0f), -mainWindow.getangulo() + 90.0f, 0.0f, 0.3f, 0.5f);
+		if (personaje[personajeActual].casillaActual > 0 && personaje[personajeActual].casillaActual % 10 == 10 ) {
+			personaje[personajeActual].angulos[0] += -90.0f;
+		}
 
 		//Recibir eventos del usuario
 		glfwPollEvents();
@@ -537,8 +530,15 @@ int main()
 		cameraAerea.mouseControl(mainWindow.getXChange(), mainWindow.getYChange());
 		cameraAerea.keyControl(mainWindow.getsKeys(), deltaTime);
 
-		if (mainWindow.getCamaraVista() > 0) camera = cameraPersonaje;
-		else camera = cameraAerea;
+		if (mainWindow.getCamaraVista() == 0) {
+			camera = cameraPersonaje;
+		}
+		else if (mainWindow.getCamaraVista() == 1) {
+			camera = camaraIsometrica;
+		}
+		else if (mainWindow.getCamaraVista() == 2) {
+			camera = cameraAerea;
+		}
 
 		// Clear the window
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -559,48 +559,8 @@ int main()
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
 		glUniform3f(uniformEyePosition, camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
 
-		/*luces*/
-		{
-			//información al shader de fuentes de iluminación
-			shaderList[0].SetDirectionalLight(&mainLight);
-			//shaderList[0].SetPointLights(pointLights, pointLightCount);
-			if (!cicloDia)
-			{
-				if (personaje[personajeActual].posicion[0] > 35 && personaje[personajeActual].posicion[2] > 35)
-				{
-					shaderList[0].SetSpotLights(spotLights, spotLightCount);
-					shaderList[0].SetPointLights(pointLights, 0);
-				}
-				else if (personaje[personajeActual].posicion[0] > 35 && personaje[personajeActual].posicion[2] < -35)
-				{
-					shaderList[0].SetSpotLights(spotLights, 0);
-					shaderList[0].SetPointLights(pointLights, pointLightCount);
-				}
-				else if (personaje[personajeActual].posicion[0] < -35 && personaje[personajeActual].posicion[2] < -35)
-				{
-					shaderList[0].SetSpotLights(spotLights2, spotLightCount2);
-					shaderList[0].SetPointLights(pointLights, 0);
-				}
-				else if (personaje[personajeActual].posicion[0] < -35 && personaje[personajeActual].posicion[2] > 35)
-				{
-					shaderList[0].SetSpotLights(spotLights, 0);
-					shaderList[0].SetPointLights(pointLights2, pointLightCount2);
-				}
-				else
-				{
-					shaderList[0].SetSpotLights(spotLights, 0);
-					shaderList[0].SetPointLights(pointLights, 0);
-				}
-			}
-			else
-			{
-				shaderList[0].SetSpotLights(spotLights, 0);
-				shaderList[0].SetPointLights(pointLights, 0);
-			}
-		}
-		
-			
-		//printf("Personaje %i Pos: %.1f, %.1f, %.1f\n",personajeActual, personaje[personajeActual].posicion[0], personaje[personajeActual].posicion[1], personaje[personajeActual].posicion[2]);
+		//información al shader de fuentes de iluminación
+		shaderList[0].SetDirectionalLight(&mainLight);
 
 		Material_opaco.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -609,20 +569,21 @@ int main()
 		glm::mat4 modelaux(1.0);
 
 		/*modelos extra*/ {
-			angulovaria += 5.0f * deltaTime;
-			if (movBanzai < 30.0f) movBanzai -= movBanzaiOf * deltaTime;
+		
 			//RENDERIZADO DE LOS MODELOS 
+			angulovaria += 5.0f * deltaTime;
 			//CASA
 			model = glm::mat4(1.0);
-			model = glm::translate(model, glm::vec3(80.0f, 1.0f, 20.0f));
-			model = glm::scale(model, glm::vec3(0.8f, 0.8f, 0.8f));
+			model = glm::translate(model, glm::vec3(100.0f, 0.0f, -35.0f));
+			model = glm::scale(model, glm::vec3(2.0f, 2.0f, 2.0f));
+			model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 			casa.RenderModel();
 
 			//PISTA
 			model = glm::mat4(1.0);
-			model = glm::translate(model, glm::vec3(15.0f, 1.0f, 80.0f));
-			model = glm::scale(model, glm::vec3(0.9f, 0.9f, 0.9f));
+			model = glm::translate(model, glm::vec3(-90.0f, 0.0f, 5.0f));
+			model = glm::scale(model, glm::vec3(2.0f, 2.0f, 2.0f));
 			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 			pista.RenderModel();
 
@@ -636,10 +597,18 @@ int main()
 			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 			coin.RenderModel();
 
+			
+			if (movBanzai > -55.0f) {
+				movBanzai -= movBanzaiOf * deltaTime; 
+				if (movBanzai < -55.0f) {
+					movBanzai = -55.0f; 
+				}
+			}
+			
 			//BANZAI
 			model = glm::mat4(1.0);
-			model = glm::translate(model, glm::vec3(-50.0f, 11.0f, -2.0f));
-			model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
+			model = glm::translate(model, glm::vec3(movBanzai, 20.0f, 60.0f));
+			model = glm::scale(model, glm::vec3(0.4f, 0.4f, 0.4f));
 			model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 			banzai.RenderModel();
@@ -708,20 +677,25 @@ int main()
 
 			//Simi Fino
 			model = glm::mat4(1.0);
-			model = glm::translate(model, glm::vec3(-70.0f, 0.0f, -15.0f));
+			model = glm::translate(model, glm::vec3(20.0f, -1.0f, -70.0f));
+			model = glm::scale(model, glm::vec3(2.0f, 2.0f, 2.0f));
+			model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 			modelaux = model;
+			
 			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 			ExtraSimiFino_Piernas.RenderModel();
 
 			model = modelaux;
 			model = glm::translate(model, glm::vec3(0.0f, 3.6f, 0.0f));
-			model = glm::rotate(model, -movSimiFino * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+			//model = glm::rotate(model, -movSimiFino * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
 			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 			ExtraSimiFino_Cuerpo.RenderModel();
 
 			//Simi Colorado
 			model = glm::mat4(1.0);
-			model = glm::translate(model, glm::vec3(-70.0f, 1.0f, 15.0f));
+			model = glm::translate(model, glm::vec3(100.0f, 1.0f, 35.0f));
+			model = glm::scale(model, glm::vec3(2.0f, 2.0f, 2.0f));
+			model = glm::rotate(model, -180 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 			modelaux = model;
 			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 			ExtraSimiColorado_Cuerpo.RenderModel();
@@ -734,7 +708,8 @@ int main()
 
 			//Simi Alucin
 			model = glm::mat4(1.0);
-			model = glm::translate(model, glm::vec3(-35.0f, -1.0f, -70.0f));
+			model = glm::translate(model, glm::vec3(-30.0f, -1.0f, -70.0f));
+			model = glm::scale(model, glm::vec3(2.0f, 2.0f, 2.0f));
 			modelaux = model;
 			model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
@@ -744,36 +719,6 @@ int main()
 			model = glm::rotate(model, -movSimiAlucin * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 			ExtraSimiAlucin_Cabeza.RenderModel();
-
-
-			//Luces de las esquinas
-			model = glm::mat4(1.0);
-			model = glm::translate(model, glm::vec3(52.0f, 0.0f, 52.0f));
-			model = glm::rotate(model, 135 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-			model = glm::scale(model, glm::vec3(0.08f, 0.08f, 0.08f));
-			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-			luminaria.RenderModel();
-
-			model = glm::mat4(1.0);
-			model = glm::translate(model, glm::vec3(-52.0f, 0.0f, -52.0f));
-			model = glm::rotate(model, 315 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-			model = glm::scale(model, glm::vec3(0.08f, 0.08f, 0.08f));
-			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-			luminaria.RenderModel();
-
-			model = glm::mat4(1.0);
-			model = glm::translate(model, glm::vec3(52.0f, 0.0f, -52.0f));
-			model = glm::rotate(model, 225 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-			model = glm::scale(model, glm::vec3(1.5f, 1.5f, 1.5f));
-			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-			farola.RenderModel();
-
-			model = glm::mat4(1.0);
-			model = glm::translate(model, glm::vec3(-52.0f, 0.0f, 52.0f));
-			model = glm::rotate(model, 45 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-			model = glm::scale(model, glm::vec3(1.5f, 1.5f, 1.5f));
-			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-			farola.RenderModel();
 		}
 
 		/*piso*/{
@@ -979,7 +924,7 @@ int main()
 						
 						/*animacion dinamica*/ switch (i) {
 							case 0: {
-
+			
 								break;
 							}
 							case 1: {
@@ -1037,11 +982,11 @@ int main()
 						if (personajeActual > 2) personajeActual = 0;
 					}
 				}
-
+				
+				
 				/*animacion estatica*/ else {
 					switch (i) {
 						case 0: {
-
 							break;
 						}
 						case 1: {
@@ -1077,40 +1022,67 @@ int main()
 						//CUERPO 
 						model = glm::mat4(1.0);
 						model = glm::translate(model, glm::vec3(
-							personaje[0].posicion[0], personaje[0].posicion[1] + 1.4f, personaje[0].posicion[2]));
+						personaje[0].posicion[0], personaje[0].posicion[1] + 1.4f, personaje[0].posicion[2]));
 						model = glm::rotate(model, giroFinal * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-
 						modelaux = model;
-
 						model = glm::scale(model, glm::vec3(personaje[0].escala, personaje[0].escala, personaje[0].escala));
 						glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 						personaje[0].modelo[0].RenderModel();
 
-						//PIE DERECHO
-						model = modelaux;
-						model = glm::translate(model, glm::vec3(0.2f, 0.2f, 0.5f));
-						model = glm::rotate(model, -90.0f * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-						model = glm::scale(model, glm::vec3(personaje[0].escala, personaje[0].escala, personaje[0].escala));
-						glUniform3fv(uniformColor, 1, glm::value_ptr(color));
-						glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-						personaje[0].modelo[2].RenderModel();
+						//PIE DERECHO 
+						{
+							float pieDerechoMovimiento = sin(glfwGetTime() * 3.5f) * 0.4f;  // Movimiento hacia adelante y atrás
+							float pieDerechoAltura = abs(sin(glfwGetTime() * 1.5f) * 0.6f);  // Levantamiento del pie
 
-						//PIE IZQUIERDO 
-						model = modelaux;
-						model = glm::translate(model, glm::vec3(-0.4f, 0.1f, -0.9f));
-						model = glm::rotate(model, -90.0f * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-						model = glm::scale(model, glm::vec3(personaje[0].escala, personaje[0].escala, personaje[0].escala));
-						glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-						personaje[0].modelo[3].RenderModel();
+							model = modelaux;
+							model = glm::translate(model, glm::vec3(0.2f, 0.2f, 0.5f + pieDerechoMovimiento)); 
+							model = glm::translate(model, glm::vec3(0.0f, pieDerechoAltura, 0.0f));  
+							model = glm::rotate(model, -90.0f * toRadians, glm::vec3(0.0f, 1.0f, 0.0f)); 
+							model = glm::scale(model, glm::vec3(personaje[0].escala, personaje[0].escala, personaje[0].escala));
+							glUniform3fv(uniformColor, 1, glm::value_ptr(color));
+							glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+							personaje[0].modelo[2].RenderModel();
+						}
+
+						//PIE IZQUIERDO
+						{
+							// Oscilación para el movimiento de caminar: Calculamos el desplazamiento en Z
+							float pieIzquierdoMovimiento = sin(glfwGetTime() * 3.5f + glm::half_pi<float>()) * 0.4f; 
+							float pieIzquierdoAltura = abs(sin(glfwGetTime() * 1.5f + glm::half_pi<float>()) * 0.6f);  
+							model = modelaux;
+							model = glm::translate(model, glm::vec3(-0.4f, 0.1f, -0.9f + pieIzquierdoMovimiento)); 
+							model = glm::translate(model, glm::vec3(0.0f, pieIzquierdoAltura, 0.0f));  
+							model = glm::rotate(model, -90.0f * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));  
+							model = glm::scale(model, glm::vec3(personaje[0].escala, personaje[0].escala, personaje[0].escala));
+							glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+							personaje[0].modelo[3].RenderModel();
+						}
 
 						//MANO
-						model = modelaux;
-						model = glm::rotate(model, 90.0f * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-						model = glm::translate(model, glm::vec3(-0.4f, 2.5f, 1.0f));
-						model = glm::rotate(model, -90.0f * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-						model = glm::scale(model, glm::vec3(personaje[0].escala, personaje[0].escala, personaje[0].escala));
-						glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-						personaje[0].modelo[1].RenderModel();
+						{
+
+							if (direccionDerecha) {
+								desplazamiento += velocidad;
+								if (desplazamiento >= rango) {
+									direccionDerecha = false;
+								}
+							}
+							else {
+								desplazamiento -= velocidad;
+								if (desplazamiento <= -rango) {
+									direccionDerecha = true;
+								}
+							}
+
+							model = modelaux;
+							model = glm::rotate(model, 90.0f * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+							model = glm::translate(model, glm::vec3(-0.8f, 3.9f, 1.8f + desplazamiento));
+							model = glm::rotate(model, -90.0f * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+							model = glm::scale(model, glm::vec3(personaje[0].escala, personaje[0].escala, personaje[0].escala));
+							glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+							personaje[0].modelo[1].RenderModel();
+						}
+
 						break;
 					}
 					case 1: {

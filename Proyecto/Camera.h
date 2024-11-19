@@ -1,40 +1,41 @@
 #pragma once
 
 #include <glew.h>
-
 #include <glm.hpp>
-#include <gtc\matrix_transform.hpp>
-
+#include <gtc/matrix_transform.hpp>
 #include <glfw3.h>
 
 class Camera
 {
 public:
-	Camera();
-	Camera(glm::vec3 startPosition, glm::vec3 startUp, GLfloat startYaw, GLfloat startPitch, GLfloat startMoveSpeed, GLfloat startTurnSpeed);
+    Camera();
+    Camera(glm::vec3 startPosition, glm::vec3 startUp, GLfloat startYaw, GLfloat startPitch, GLfloat startMoveSpeed, GLfloat startTurnSpeed);
 
-	void keyControl(bool* keys, GLfloat deltaTime);
-	void mouseControl(GLfloat xChange, GLfloat yChange);
+    // Métodos que queremos añadir
+    void setPosition(const glm::vec3& newPosition);  // Cambia la posición de la cámara
+    void setLookAt(const glm::vec3& target);         // Hace que la cámara mire a un objetivo específico
 
-	glm::vec3 getCameraPosition();
-	glm::vec3 getCameraDirection();
-	glm::mat4 calculateViewMatrix();
+    void keyControl(bool* keys, GLfloat deltaTime);
+    void mouseControl(GLfloat xChange, GLfloat yChange);
 
-	~Camera();
+    glm::vec3 getCameraPosition();
+    glm::vec3 getCameraDirection();
+    glm::mat4 calculateViewMatrix();
+
+    ~Camera();
 
 private:
-	glm::vec3 position;
-	glm::vec3 front;
-	glm::vec3 up;
-	glm::vec3 right;
-	glm::vec3 worldUp;
+    glm::vec3 position;
+    glm::vec3 front;
+    glm::vec3 up;
+    glm::vec3 right;
+    glm::vec3 worldUp;
 
-	GLfloat yaw;
-	GLfloat pitch;
+    GLfloat yaw;
+    GLfloat pitch;
 
-	GLfloat moveSpeed;
-	GLfloat turnSpeed;
+    GLfloat moveSpeed;
+    GLfloat turnSpeed;
 
-	void update();
+    void update();
 };
-
