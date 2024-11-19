@@ -8,7 +8,7 @@ void Personaje::iniModelos(int i) {
 		modelo[m] = Model();
 		switch (i) {
 			case 0: {
-				escala = 0.5f;
+				escala = 0.8f;
 				switch (m) {
 				case 0: modelo[m].LoadModel("Models/cuerpo.obj"); break;
 				case 1: modelo[m].LoadModel("Models/mano.obj"); break;

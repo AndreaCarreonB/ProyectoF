@@ -39,7 +39,7 @@ int Window::Initialise()
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
 	//CREAR VENTANA
-	mainWindow = glfwCreateWindow(width, height, "PracticaXX:Nombre de la practica", NULL, NULL);
+	mainWindow = glfwCreateWindow(width, height, "Proyecto Final: Monopoly Go", NULL, NULL);
 
 	if (!mainWindow)
 	{
@@ -108,7 +108,7 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 	//LETRA PARA CAMBIAR DE CAMARA
 	if (key == GLFW_KEY_C && action == GLFW_PRESS)
 	{
-		theWindow->CamaraVista = theWindow->CamaraVista * -1;
+		theWindow->CamaraVista = (theWindow->CamaraVista + 1) % 3;
 	}
 
 	//FLECHAS

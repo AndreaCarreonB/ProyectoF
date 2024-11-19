@@ -39,7 +39,12 @@ Window mainWindow;
 std::vector<Mesh*> meshList;
 std::vector<Shader> shaderList;
 
-Camera camera, cameraAerea, cameraPersonaje;
+Camera camera, cameraAerea, cameraPersonaje, camaraIsometrica;
+float offset = 15.0f;
+float desplazamiento = 0.1f;
+float velocidad = 0.001f;
+float rango = 0.1f;
+bool direccionDerecha = true;
 
 Texture pisoTexture;
 Texture centroTexture;
@@ -92,6 +97,14 @@ PointLight pointLights[MAX_POINT_LIGHTS];
 PointLight pointLights2[MAX_POINT_LIGHTS];
 SpotLight spotLights[MAX_SPOT_LIGHTS];
 SpotLight spotLights2[MAX_SPOT_LIGHTS];
+
+// Crear la cámara isométrica
+glm::vec3 posicionCamara(-100.0f, 100.0f, 125.0f); // Posición de la cámara
+glm::vec3 vectorArriba(0.0f, 1.0f, 0.0f);          // Vector "arriba" (normalmente el eje Y)
+GLfloat yaw = -45.0f;        // Ángulo de rotación sobre el eje Y
+GLfloat pitch = -35.0f;    // Ángulo de rotación sobre el eje X
+GLfloat moveSpeed = 0.0f;  // Velocidad de movimiento (no necesaria si no estás moviendo la cámara)
+GLfloat turnSpeed = 0.0f;  // Velocidad de rotación (no necesaria si no estás rotando la cámara)
 
 // Vertex Shader
 static const char* vShader = "shaders/shader_light.vert";
@@ -275,9 +288,9 @@ int main()
 	CreateObjects();
 	CreateShaders();
 
-	//camera = Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -60.0f, 0.0f, 0.3f, 0.5f);
 	Camera camera(glm::vec3(0.0f, 10.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.0f, 45.0f, 5.0f, 0.1f);
-	cameraAerea = Camera(glm::vec3(0.0f, 185.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.0f, -90.0f, 0.6f, 0.5f);
+	cameraAerea = Camera(glm::vec3(0.0f, 250.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.0f, -90.0f, 0.6f, 0.5f);
+
 	//base
 	{
 	pisoTexture = Texture("Textures/piso.tga");
@@ -496,10 +509,10 @@ int main()
 	avanzaSimiPrincipal = true;
 
 	//variables para animación de mario
-	float movCoinOffset = 1.0f;
+	float movCoinOffset = 2.0f;
 	float giraCoin = 0.0f;
-	float movBanzai = 0.0f;
-	float movBanzaiOf = 0.1f;
+	float movBanzai = 80.0f;
+	float movBanzaiOf = 0.03f;
 	float angulovaria = 0.0f;
 
 	//modelos extra
@@ -551,7 +564,27 @@ int main()
 		deltaTime += (now - lastTime) / limitFPS;
 		lastTime = now;
 
-		cameraPersonaje = Camera(glm::vec3(mainWindow.getPosCamaraX(), 18.0f, mainWindow.getPosCamaraZ() - 6.0f), glm::vec3(0.0f, 1.0f, 0.0f), -mainWindow.getangulo() + 90.0f, 0.0f, 0.3f, 0.5f);
+		//CAMARAS
+		//Isometrica
+		Camera camaraIsometrica(posicionCamara, vectorArriba, yaw, pitch, moveSpeed, turnSpeed);
+
+		//Cámara 3ra persona
+		cameraPersonaje = Camera(
+			glm::vec3(
+				personaje[personajeActual].posicion[0] - offset,
+				personaje[personajeActual].posicion[1] + 7.0f,
+				personaje[personajeActual].posicion[2]
+			),
+			glm::vec3(0.0f, 1.0f, 0.0f),
+			0.0f,
+			0.0f,
+			0.0f,
+			0.0f
+		);
+
+		if (personaje[personajeActual].casillaActual > 0 && personaje[personajeActual].casillaActual % 10 == 10) {
+			personaje[personajeActual].angulos[0] += -90.0f;
+		}
 
 		//Recibir eventos del usuario
 		glfwPollEvents();
@@ -560,8 +593,15 @@ int main()
 		cameraAerea.mouseControl(mainWindow.getXChange(), mainWindow.getYChange());
 		cameraAerea.keyControl(mainWindow.getsKeys(), deltaTime);
 
-		if (mainWindow.getCamaraVista() > 0) camera = cameraPersonaje;
-		else camera = cameraAerea;
+		if (mainWindow.getCamaraVista() == 0) {
+			camera = cameraPersonaje;
+		}
+		else if (mainWindow.getCamaraVista() == 1) {
+			camera = camaraIsometrica;
+		}
+		else if (mainWindow.getCamaraVista() == 2) {
+			camera = cameraAerea;
+		}
 
 		// Clear the window
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -634,20 +674,20 @@ int main()
 		glm::mat4 modelaux(1.0);
 
 		/*modelos extra*/ {
-			angulovaria += 5.0f * deltaTime;
-			if (movBanzai < 30.0f) movBanzai -= movBanzaiOf * deltaTime;
 			//RENDERIZADO DE LOS MODELOS 
+			angulovaria += 5.0f * deltaTime;
 			//CASA
 			model = glm::mat4(1.0);
-			model = glm::translate(model, glm::vec3(80.0f, 1.0f, 20.0f));
-			model = glm::scale(model, glm::vec3(0.8f, 0.8f, 0.8f));
+			model = glm::translate(model, glm::vec3(100.0f, 0.0f, -35.0f));
+			model = glm::scale(model, glm::vec3(2.0f, 2.0f, 2.0f));
+			model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 			casa.RenderModel();
 
 			//PISTA
 			model = glm::mat4(1.0);
-			model = glm::translate(model, glm::vec3(15.0f, 1.0f, 80.0f));
-			model = glm::scale(model, glm::vec3(0.9f, 0.9f, 0.9f));
+			model = glm::translate(model, glm::vec3(-90.0f, 0.0f, 5.0f));
+			model = glm::scale(model, glm::vec3(2.0f, 2.0f, 2.0f));
 			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 			pista.RenderModel();
 
@@ -661,10 +701,18 @@ int main()
 			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 			coin.RenderModel();
 
+
+			if (movBanzai > -55.0f) {
+				movBanzai -= movBanzaiOf * deltaTime;
+				if (movBanzai < -55.0f) {
+					movBanzai = -55.0f;
+				}
+			}
+
 			//BANZAI
 			model = glm::mat4(1.0);
-			model = glm::translate(model, glm::vec3(-50.0f, 11.0f, -2.0f));
-			model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
+			model = glm::translate(model, glm::vec3(movBanzai, 20.0f, 60.0f));
+			model = glm::scale(model, glm::vec3(0.4f, 0.4f, 0.4f));
 			model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 			banzai.RenderModel();
@@ -733,20 +781,25 @@ int main()
 
 			//Simi Fino
 			model = glm::mat4(1.0);
-			model = glm::translate(model, glm::vec3(-70.0f, 0.0f, -15.0f));
+			model = glm::translate(model, glm::vec3(20.0f, -1.0f, -70.0f));
+			model = glm::scale(model, glm::vec3(2.0f, 2.0f, 2.0f));
+			model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 			modelaux = model;
+
 			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 			ExtraSimiFino_Piernas.RenderModel();
 
 			model = modelaux;
 			model = glm::translate(model, glm::vec3(0.0f, 3.6f, 0.0f));
-			model = glm::rotate(model, -movSimiFino * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+			//model = glm::rotate(model, -movSimiFino * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
 			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 			ExtraSimiFino_Cuerpo.RenderModel();
 
 			//Simi Colorado
 			model = glm::mat4(1.0);
-			model = glm::translate(model, glm::vec3(-70.0f, 1.0f, 15.0f));
+			model = glm::translate(model, glm::vec3(100.0f, 1.0f, 35.0f));
+			model = glm::scale(model, glm::vec3(2.0f, 2.0f, 2.0f));
+			model = glm::rotate(model, -180 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 			modelaux = model;
 			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 			ExtraSimiColorado_Cuerpo.RenderModel();
@@ -759,7 +812,8 @@ int main()
 
 			//Simi Alucin
 			model = glm::mat4(1.0);
-			model = glm::translate(model, glm::vec3(-35.0f, -1.0f, -70.0f));
+			model = glm::translate(model, glm::vec3(-30.0f, -1.0f, -70.0f));
+			model = glm::scale(model, glm::vec3(2.0f, 2.0f, 2.0f));
 			modelaux = model;
 			model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
@@ -885,25 +939,26 @@ int main()
 			if (mainWindow.getAnimacionDado()) tirar = true;
 			/*animaciones*/ if (tirar) {
 				if (asignar) {
-					//cara_random_8 = caraRandom_8();
-					cara_random_8 = 3;
+					cara_random_8 = caraRandom_8();
 					cara_random_4 = caraRandom_4();
 
-					/*posiciones 8*/ switch (cara_random_8) {
-					case 1: rotX_8 = 239; rotY_8 = 44; break;
-					case 2: rotX_8 = -306; rotY_8 = 42; break;
-					case 3: rotX_8 = -308; rotY_8 = -47; break;
-					case 4: rotX_8 = -129; rotY_8 = 224; break;
-					case 5: rotX_8 = -307; rotY_8 = 137; break;
-					case 6: rotX_8 = -234; rotY_8 = 127; break;
-					case 7: rotX_8 = -309; rotY_8 = 224.5; break;
-					case 8: rotX_8 = -129; rotY_8 = 135; break;
+					/*posiciones 8*/ switch (cara_random_8) 
+					{
+						case 1: rotX_8 = 239; rotY_8 = 44; break;
+						case 2: rotX_8 = -306; rotY_8 = 42; break;
+						case 3: rotX_8 = -308; rotY_8 = -47; break;
+						case 4: rotX_8 = -129; rotY_8 = 224; break;
+						case 5: rotX_8 = -307; rotY_8 = 137; break;
+						case 6: rotX_8 = -234; rotY_8 = 127; break;
+						case 7: rotX_8 = -309; rotY_8 = 224.5; break;
+						case 8: rotX_8 = -129; rotY_8 = 135; break;
 					}
-					/*posiciones 4*/ switch (cara_random_4) {
-					case 1: rotX_4 = 360; rotY_4 = 360; break;
-					case 2: rotX_4 = 110; rotY_4 = 330; break;
-					case 3: rotX_4 = 110; rotY_4 = -270; break;
-					case 4: rotX_4 = 110; rotY_4 = 210; break;
+					/*posiciones 4*/ switch (cara_random_4) 
+					{
+						case 1: rotX_4 = 360; rotY_4 = 360; break;
+						case 2: rotX_4 = 110; rotY_4 = 330; break;
+						case 3: rotX_4 = 110; rotY_4 = -270; break;
+						case 4: rotX_4 = 110; rotY_4 = 210; break;
 					}
 
 					numDado = cara_random_8 + cara_random_4;
