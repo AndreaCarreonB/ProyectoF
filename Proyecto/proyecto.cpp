@@ -74,7 +74,7 @@ float altura_8, altura_4, alturaOffset;
 float rotX2_8, rotX2_4, rotX2Offset;
 float rotY2_8, rotY2_4, rotY2Offset;
 float rotX_8, rotX_4, rotY_8, rotY_4;
-int cara_random_8, cara_random_4;
+int cara_random_8 = 0, cara_random_4 = 0;
 int numDado = 0;
 
 //materiales
@@ -405,7 +405,7 @@ int main()
 
 		altura_8 = 20.0f;
 		altura_4 = 20.0f;
-		alturaOffset = 0.6;
+		alturaOffset = 0.2;
 
 		rotX2_8 = 0.0f;
 		rotX2_4 = 0.0f;
@@ -880,28 +880,32 @@ int main()
 		}
 
 		/*dados*/ {
-			/*posiciones 8*/ switch (cara_random_8) {
-			case 1: rotX_8 = -307; rotY_8 = 137; break;
-			case 2: rotX_8 = -234; rotY_8 = 127; break;
-			case 3: rotX_8 = -129; rotY_8 = 135; break;
-			case 4: rotX_8 = -309; rotY_8 = 224.5; break;
-			case 5: rotX_8 = -129; rotY_8 = 52; break;
-			case 6: rotX_8 = -306; rotY_8 = 42; break;
-			case 7: rotX_8 = 239; rotY_8 = 44; break;
-			case 8: rotX_8 = -308; rotY_8 = -47; break;
-			}
-			/*posiciones 4*/ switch (cara_random_4) {
-			case 1: rotX_4 = 360; rotY_4 = 360; break;
-			case 2: rotX_4 = 110; rotY_4 = 330; break;
-			case 3: rotX_4 = 110; rotY_4 = -270; break;
-			case 4: rotX_4 = 110; rotY_4 = 210; break;
-			}
+			
 
 			if (mainWindow.getAnimacionDado()) tirar = true;
 			/*animaciones*/ if (tirar) {
 				if (asignar) {
-					cara_random_8 = caraRandom_8();
+					//cara_random_8 = caraRandom_8();
+					cara_random_8 = 3;
 					cara_random_4 = caraRandom_4();
+
+					/*posiciones 8*/ switch (cara_random_8) {
+					case 1: rotX_8 = 239; rotY_8 = 44; break;
+					case 2: rotX_8 = -306; rotY_8 = 42; break;
+					case 3: rotX_8 = -308; rotY_8 = -47; break;
+					case 4: rotX_8 = -129; rotY_8 = 224; break;
+					case 5: rotX_8 = -307; rotY_8 = 137; break;
+					case 6: rotX_8 = -234; rotY_8 = 127; break;
+					case 7: rotX_8 = -309; rotY_8 = 224.5; break;
+					case 8: rotX_8 = -129; rotY_8 = 135; break;
+					}
+					/*posiciones 4*/ switch (cara_random_4) {
+					case 1: rotX_4 = 360; rotY_4 = 360; break;
+					case 2: rotX_4 = 110; rotY_4 = 330; break;
+					case 3: rotX_4 = 110; rotY_4 = -270; break;
+					case 4: rotX_4 = 110; rotY_4 = 210; break;
+					}
+
 					numDado = cara_random_8 + cara_random_4;
 					personaje[personajeActual].casillaSiguiente = personaje[personajeActual].casillaActual + numDado;
 					personaje[personajeActual].avanza = true;
@@ -911,25 +915,35 @@ int main()
 
 				if (altura_8 > 5.8) altura_8 -= alturaOffset * deltaTime;
 
-				if (rotX2_8 != rotX_8) {
-					if (rotX2_8 <= rotX_8) rotX2_8 += rotX2Offset * deltaTime;
-					else rotX2_8 -= rotX2Offset * deltaTime;
+				if (rotX_8 > 0)
+				{
+					if (rotX2_8 < rotX_8) rotX2_8 += rotX2Offset * deltaTime;
 				}
-				if (rotY2_8 != rotY_8) {
+				else
+					if (rotX2_8 > rotX_8) rotX2_8 -= rotX2Offset * deltaTime;
+
+				if (rotY_8 > 0)
+				{
 					if (rotY2_8 < rotY_8) rotY2_8 += rotY2Offset * deltaTime;
-					else rotY2_8 -= rotY2Offset * deltaTime;
 				}
+				else
+					if (rotY2_8 > rotY_8) rotY2_8 -= rotY2Offset * deltaTime;
+
 				if (altura_4 > 5.2) altura_4 -= alturaOffset * deltaTime;
 
-				if (rotX2_4 != rotX_4) {
-					if (rotX2_4 <= rotX_4) rotX2_4 += rotX2Offset * deltaTime;
-						
-					else rotX2_4 -= rotX2Offset * deltaTime;
+				if (rotX_4 > 0)
+				{
+					if (rotX2_4 < rotX_4) rotX2_4 += rotX2Offset * deltaTime;
 				}
-				if (rotY2_4 != rotY_4) {
+				else
+					if (rotX2_4 > rotX_4) rotX2_4 -= rotX2Offset * deltaTime;
+
+				if (rotY_4 > 0)
+				{
 					if (rotY2_4 < rotY_4) rotY2_4 += rotY2Offset * deltaTime;
-					else rotY2_4 -= rotY2Offset * deltaTime;
 				}
+				else
+					if (rotY2_4 > rotY_4) rotY2_4 -= rotY2Offset * deltaTime;
 			}
 			else {
 				rotX2_8 = 0.0f;
@@ -964,6 +978,8 @@ int main()
 				dado4.RenderModel();
 			}
 		}
+
+		
 
 		/*personaje*/ {
 			if (personajeSig){
