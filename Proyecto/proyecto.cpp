@@ -61,6 +61,11 @@ Model ExtraSimiColorado_Brazo;
 Model ExtraSimiAlucin_Cuerpo;
 Model ExtraSimiAlucin_Cabeza;
 
+float movSimiPrincipal;
+float movSimiPrincipalOffset;
+bool avanzaSimiPrincipal;
+bool estadoSimiPrincipal;
+
 //dados
 Texture dadoTexture8;
 Model dado4;
@@ -69,7 +74,7 @@ float altura_8, altura_4, alturaOffset;
 float rotX2_8, rotX2_4, rotX2Offset;
 float rotY2_8, rotY2_4, rotY2Offset;
 float rotX_8, rotX_4, rotY_8, rotY_4;
-int cara_random_8, cara_random_4;
+int cara_random_8 = 0, cara_random_4 = 0;
 int numDado = 0;
 
 //materiales
@@ -321,6 +326,19 @@ int main()
 	unsigned int spotLightCount = 0;
 	unsigned int spotLightCount2 = 0;
 
+	//Luz ligada al personaje
+	pointLights[0] = PointLight(1.0f, 1.0f, 1.0f, // luz blanca
+		1.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, // posicion
+		1.0f, 0.09f, 0.032f);
+	pointLightCount++;
+
+	pointLights2[0] = PointLight(1.0f, 1.0f, 0.0f, // luz blanca
+		1.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, // posicion
+		1.0f, 0.09f, 0.032f);
+	pointLightCount2++;
+
 	//Luces de las luminarias
 	spotLights[0] = SpotLight(0.0f, 1.0f, 1.0f, //luz cian
 		1.0f, 2.0f,
@@ -338,13 +356,13 @@ int main()
 		40.0f); // angulo de apertura
 	spotLightCount2++;
 
-	pointLights[0] = PointLight(1.0f, 1.0f, 0.0f, // luz amarilla
+	pointLights[1] = PointLight(1.0f, 1.0f, 0.0f, // luz amarilla
 		7.0f, 1.0f,
 		45.0f, 20.0f, -45.0f, // posicion
 		1.0f, 0.09f, 0.032f);
 	pointLightCount++;
 
-	pointLights2[0] = PointLight(1.0f, 1.0f, 0.0f, // luz amarilla
+	pointLights2[1] = PointLight(1.0f, 1.0f, 0.0f, // luz amarilla
 		7.0f, 1.0f,
 		-45.0f, 20.0f, 45.0f, // posicion
 		1.0f, 0.09f, 0.032f);
@@ -387,7 +405,7 @@ int main()
 
 		altura_8 = 20.0f;
 		altura_4 = 20.0f;
-		alturaOffset = 0.6;
+		alturaOffset = 0.2;
 
 		rotX2_8 = 0.0f;
 		rotX2_4 = 0.0f;
@@ -472,6 +490,11 @@ int main()
 	movSimiAlucinOffset = 0.5;
 	estadoSimiAlucin = true;
 
+	//variables para animación del simi principal
+	movSimiPrincipal = 0.0f;
+	movSimiPrincipalOffset = 5.0;
+	avanzaSimiPrincipal = true;
+
 	//variables para animación de mario
 	float movCoinOffset = 1.0f;
 	float giraCoin = 0.0f;
@@ -485,7 +508,7 @@ int main()
 	farola = Model();
 	farola.LoadModel("Models/farola.obj");
 
-	/*pista = Model();
+	pista = Model();
 	pista.LoadModel("Models/Circuit.obj");
 	banzai = Model();
 	banzai.LoadModel("Models/banzai.obj");
@@ -507,7 +530,7 @@ int main()
 	ExtraSimiAlucin_Cuerpo = Model();
 	ExtraSimiAlucin_Cuerpo.LoadModel("Models/simi_alucin_cuerpo.obj");
 	ExtraSimiAlucin_Cabeza = Model();
-	ExtraSimiAlucin_Cabeza.LoadModel("Models/simi_alucin_cabeza.obj");*/
+	ExtraSimiAlucin_Cabeza.LoadModel("Models/simi_alucin_cabeza.obj");
 
 
 	bool asignar = false;
@@ -563,13 +586,18 @@ int main()
 		{
 			//información al shader de fuentes de iluminación
 			shaderList[0].SetDirectionalLight(&mainLight);
-			//shaderList[0].SetPointLights(pointLights, pointLightCount);
+
 			if (!cicloDia)
 			{
+				//Para que la luz ligada al personaje siga a este cuando el tiempo es de noche
+				pointLights[0].SetPos(glm::vec3(personaje[personajeActual].posicion[0], personaje[personajeActual].posicion[1], personaje[personajeActual].posicion[2]));
+				pointLights2[0].SetPos(glm::vec3(personaje[personajeActual].posicion[0], personaje[personajeActual].posicion[1], personaje[personajeActual].posicion[2]));
+
+				//Para validar la posición del personaje y encender las luces correspondientes
 				if (personaje[personajeActual].posicion[0] > 35 && personaje[personajeActual].posicion[2] > 35)
 				{
 					shaderList[0].SetSpotLights(spotLights, spotLightCount);
-					shaderList[0].SetPointLights(pointLights, 0);
+					shaderList[0].SetPointLights(pointLights, 1);
 				}
 				else if (personaje[personajeActual].posicion[0] > 35 && personaje[personajeActual].posicion[2] < -35)
 				{
@@ -579,7 +607,7 @@ int main()
 				else if (personaje[personajeActual].posicion[0] < -35 && personaje[personajeActual].posicion[2] < -35)
 				{
 					shaderList[0].SetSpotLights(spotLights2, spotLightCount2);
-					shaderList[0].SetPointLights(pointLights, 0);
+					shaderList[0].SetPointLights(pointLights, 1);
 				}
 				else if (personaje[personajeActual].posicion[0] < -35 && personaje[personajeActual].posicion[2] > 35)
 				{
@@ -589,7 +617,7 @@ int main()
 				else
 				{
 					shaderList[0].SetSpotLights(spotLights, 0);
-					shaderList[0].SetPointLights(pointLights, 0);
+					shaderList[0].SetPointLights(pointLights, 1);
 				}
 			}
 			else
@@ -599,9 +627,6 @@ int main()
 			}
 		}
 		
-			
-		//printf("Personaje %i Pos: %.1f, %.1f, %.1f\n",personajeActual, personaje[personajeActual].posicion[0], personaje[personajeActual].posicion[1], personaje[personajeActual].posicion[2]);
-
 		Material_opaco.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
 		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
@@ -855,28 +880,32 @@ int main()
 		}
 
 		/*dados*/ {
-			/*posiciones 8*/ switch (cara_random_8) {
-			case 1: rotX_8 = -307; rotY_8 = 137; break;
-			case 2: rotX_8 = -234; rotY_8 = 127; break;
-			case 3: rotX_8 = -129; rotY_8 = 135; break;
-			case 4: rotX_8 = -309; rotY_8 = 224.5; break;
-			case 5: rotX_8 = -129; rotY_8 = 52; break;
-			case 6: rotX_8 = -306; rotY_8 = 42; break;
-			case 7: rotX_8 = 239; rotY_8 = 44; break;
-			case 8: rotX_8 = -308; rotY_8 = -47; break;
-			}
-			/*posiciones 4*/ switch (cara_random_4) {
-			case 1: rotX_4 = 360; rotY_4 = 360; break;
-			case 2: rotX_4 = 110; rotY_4 = 330; break;
-			case 3: rotX_4 = 110; rotY_4 = -270; break;
-			case 4: rotX_4 = 110; rotY_4 = 210; break;
-			}
+			
 
 			if (mainWindow.getAnimacionDado()) tirar = true;
 			/*animaciones*/ if (tirar) {
 				if (asignar) {
-					cara_random_8 = caraRandom_8();
+					//cara_random_8 = caraRandom_8();
+					cara_random_8 = 3;
 					cara_random_4 = caraRandom_4();
+
+					/*posiciones 8*/ switch (cara_random_8) {
+					case 1: rotX_8 = 239; rotY_8 = 44; break;
+					case 2: rotX_8 = -306; rotY_8 = 42; break;
+					case 3: rotX_8 = -308; rotY_8 = -47; break;
+					case 4: rotX_8 = -129; rotY_8 = 224; break;
+					case 5: rotX_8 = -307; rotY_8 = 137; break;
+					case 6: rotX_8 = -234; rotY_8 = 127; break;
+					case 7: rotX_8 = -309; rotY_8 = 224.5; break;
+					case 8: rotX_8 = -129; rotY_8 = 135; break;
+					}
+					/*posiciones 4*/ switch (cara_random_4) {
+					case 1: rotX_4 = 360; rotY_4 = 360; break;
+					case 2: rotX_4 = 110; rotY_4 = 330; break;
+					case 3: rotX_4 = 110; rotY_4 = -270; break;
+					case 4: rotX_4 = 110; rotY_4 = 210; break;
+					}
+
 					numDado = cara_random_8 + cara_random_4;
 					personaje[personajeActual].casillaSiguiente = personaje[personajeActual].casillaActual + numDado;
 					personaje[personajeActual].avanza = true;
@@ -886,25 +915,35 @@ int main()
 
 				if (altura_8 > 5.8) altura_8 -= alturaOffset * deltaTime;
 
-				if (rotX2_8 != rotX_8) {
-					if (rotX2_8 <= rotX_8) rotX2_8 += rotX2Offset * deltaTime;
-					else rotX2_8 -= rotX2Offset * deltaTime;
+				if (rotX_8 > 0)
+				{
+					if (rotX2_8 < rotX_8) rotX2_8 += rotX2Offset * deltaTime;
 				}
-				if (rotY2_8 != rotY_8) {
+				else
+					if (rotX2_8 > rotX_8) rotX2_8 -= rotX2Offset * deltaTime;
+
+				if (rotY_8 > 0)
+				{
 					if (rotY2_8 < rotY_8) rotY2_8 += rotY2Offset * deltaTime;
-					else rotY2_8 -= rotY2Offset * deltaTime;
 				}
+				else
+					if (rotY2_8 > rotY_8) rotY2_8 -= rotY2Offset * deltaTime;
+
 				if (altura_4 > 5.2) altura_4 -= alturaOffset * deltaTime;
 
-				if (rotX2_4 != rotX_4) {
-					if (rotX2_4 <= rotX_4) rotX2_4 += rotX2Offset * deltaTime;
-						
-					else rotX2_4 -= rotX2Offset * deltaTime;
+				if (rotX_4 > 0)
+				{
+					if (rotX2_4 < rotX_4) rotX2_4 += rotX2Offset * deltaTime;
 				}
-				if (rotY2_4 != rotY_4) {
+				else
+					if (rotX2_4 > rotX_4) rotX2_4 -= rotX2Offset * deltaTime;
+
+				if (rotY_4 > 0)
+				{
 					if (rotY2_4 < rotY_4) rotY2_4 += rotY2Offset * deltaTime;
-					else rotY2_4 -= rotY2Offset * deltaTime;
 				}
+				else
+					if (rotY2_4 > rotY_4) rotY2_4 -= rotY2Offset * deltaTime;
 			}
 			else {
 				rotX2_8 = 0.0f;
@@ -939,6 +978,8 @@ int main()
 				dado4.RenderModel();
 			}
 		}
+
+		
 
 		/*personaje*/ {
 			if (personajeSig){
@@ -988,7 +1029,36 @@ int main()
 								break;
 							}
 							case 2: {
-
+								if (movSimiPrincipal >= -50 && movSimiPrincipal <= 50)
+								{
+									if (estadoSimiPrincipal)
+									{
+										if (movSimiPrincipal <= 45)
+										{
+											movSimiPrincipal += movSimiPrincipalOffset * deltaTime;
+										}
+										else
+										{
+											estadoSimiPrincipal = false;
+										}
+									}
+									else
+									{
+										if (movSimiPrincipal >= -45)
+										{
+											movSimiPrincipal -= movSimiPrincipalOffset * deltaTime;
+										}
+										else
+										{
+											estadoSimiPrincipal = true;
+										}
+									}
+								}
+								else
+								{
+									movSimiPrincipal = 0;
+								}
+								
 								break;
 							}
 						}
@@ -1189,11 +1259,13 @@ int main()
 
 						model = modelaux;
 						model = glm::translate(model, glm::vec3(0.2f, 2.5f, -1.0f));
+						model = glm::rotate(model, -movSimiPrincipal * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
 						glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 						personaje[2].modelo[1].RenderModel();
 
 						model = modelaux;
 						model = glm::translate(model, glm::vec3(0.2f, 2.5f, 1.0f));
+						model = glm::rotate(model, movSimiPrincipal * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
 						glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 						personaje[2].modelo[2].RenderModel();
 
