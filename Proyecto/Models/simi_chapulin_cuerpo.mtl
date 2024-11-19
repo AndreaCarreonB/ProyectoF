@@ -1,0 +1,32 @@
+# Blender 3.6.0 MTL File: 'simi_chapulin.blend'
+# www.blender.org
+
+newmtl mat0
+Ns 399.999969
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd e06lambert3_baseColor.jpg
+
+newmtl mat1
+Ns 399.999969
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd e06lambert2_baseColor.jpg
+
+newmtl mat2
+Ns 813.787903
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd e06blinn1_baseColor.jpg

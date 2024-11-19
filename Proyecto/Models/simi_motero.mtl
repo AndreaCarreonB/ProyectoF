@@ -1,0 +1,43 @@
+# Blender 3.6.0 MTL File: 'simi_motero.blend'
+# www.blender.org
+
+newmtl Material_000001
+Ns 10.000005
+Ka 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 2
+map_Kd Motorcycle_Clean_d.png
+map_Ks Motorcycle_Clean_s2.png
+map_d Motorcycle_Clean_alpha.png
+map_Bump -bm 0.300000 Motorcycle_Clean_n.png
+
+newmtl mat0
+Ns 399.999969
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd 11lambert3_baseColor.jpg
+
+newmtl mat1
+Ns 399.999969
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd 11lambert2_baseColor.jpg
+
+newmtl mat2
+Ns 813.787903
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd 11blinn1_baseColor.jpg
